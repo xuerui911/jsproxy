@@ -3,11 +3,11 @@
 { # this ensures the entire script is downloaded #
 
 JSPROXY_VER=0.1.0
-OPENRESTY_VER=1.15.8.1
+OPENRESTY_VER=1.17.8.2
 
-SRC_URL=https://raw.githubusercontent.com/EtherDream/jsproxy/$JSPROXY_VER
-BIN_URL=https://raw.githubusercontent.com/EtherDream/jsproxy-bin/master
-ZIP_URL=https://codeload.github.com/EtherDream/jsproxy/tar.gz
+SRC_URL=https://raw.githubusercontent.com/xuerui911/jsproxy/$JSPROXY_VER
+BIN_URL=https://openresty.org/download
+ZIP_URL=https://codeload.github.com/xuerui911/jsproxy/tar.gz
 
 SUPPORTED_OS="Linux-x86_64"
 OS="$(uname)-$(uname -m)"
@@ -243,7 +243,27 @@ main() {
   local line=$(iptables -t nat -nL --line-numbers | grep "tcp dpt:80 redir ports 8080")
   iptables -t nat -D PREROUTING ${line%% *}
 
-  log "安装完成。后续维护参考 https://github.com/EtherDream/jsproxy"
+  #默认端口为 8443 (HTTPS) 和 8080 (HTTP) ，如需改成 443 和 80，推荐使用端口转发：
+  iptables -A PREROUTING -t nat -p tcp --dport 443 -j REDIRECT --to-ports 8443
+  iptables -A PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-ports 8080
+  #同时修改 www.conf 中的 :8443 为 :443   /home/jsproxy/server/www.conf
+  sed -i 's/:8443/:443' $INSTALL_DIR/server/www.conf
+  #创建并启动服务
+  jsproxyservice="/etc/systemd/system/jsproxy.service"
+  rm $jsproxyservice
+  touch $jsproxyservice
+  echo "[Unit]
+  Description=jsproxy
+  [Service]
+  User=root
+  ExecStart=/home/jsproxy/openresty/nginx/sbin/nginx -c /home/jsproxy/server/nginx.conf -p /home/jsproxy/server/nginx/
+  Restart=on-abort
+  [Install]
+  WantedBy=multi-user.target" >> $jsproxyservice
+  systemctl enable jsproxy
+  systemctl start jsproxy 
+
+  log "安装完成。后续维护参考 https://github.com/xuerui911/jsproxy"
 }
 
 
@@ -251,6 +271,12 @@ if [[ $1 == "install" ]]; then
   install $@
 else
   main $@
+  
 fi
 
+
+
+
+
 } # this ensures the entire script is downloaded #
+
