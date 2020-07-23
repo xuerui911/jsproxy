@@ -5,9 +5,9 @@
 JSPROXY_VER=0.1.0
 OPENRESTY_VER=1.17.8.2
 
-SRC_URL=https://raw.githubusercontent.com/xuerui911/jsproxy/$JSPROXY_VER
+SRC_URL=https://raw.githubusercontent.com/EtherDream/jsproxy/$JSPROXY_VER
 BIN_URL=https://openresty.org/download
-ZIP_URL=https://codeload.github.com/xuerui911/jsproxy/tar.gz
+ZIP_URL=https://codeload.github.com/EtherDream/jsproxy/tar.gz
 
 SUPPORTED_OS="Linux-x86_64"
 OS="$(uname)-$(uname -m)"
@@ -263,7 +263,7 @@ main() {
   systemctl enable jsproxy
   systemctl start jsproxy 
 
-  log "安装完成。后续维护参考 https://github.com/xuerui911/jsproxy"
+  log "安装完成。后续维护参考 https://github.com/EtherDream/jsproxy"
 }
 
 
@@ -279,4 +279,3 @@ fi
 
 
 } # this ensures the entire script is downloaded #
-
